@@ -1,0 +1,444 @@
+git版本控制
+
+一、起步
+1.关于
+1.1本地版本控制系统
+RVS
+丢失风险
+
+1.2集中化版本控制系统-CVCS
+CVS
+Subversion
+Perforce
+缺点：单点故障
+
+1.3分布式版本控制系统-DVCS
+ Git、Mercurial、Bazaar 以及 Darcs 
+优点：
+1.3.1.客户端并不只提取最新版本的文件快照，而是把代码仓库完整地镜像下来
+任何一处协同工作用的服务器发生故障，事后都可以用任何一个镜像出来的本地仓库恢复
+1.3.2.可以指定和若干不同的远端代码仓库进行交互
+籍此，就可以在同一个项目中，分别和不同工作小组的人相互协作
+
+
+
+2.简史
+Linux 开源社区开发，目标：
+1.速度
+2.简单设计
+3.对非线性开发模式强力支持(成千上万分支)
+4.完全分布式
+5.有能力高效管理超大规模项目(速度和数据量)
+
+
+3.基础
+和其他版本控制工具有很大差异
+3.1直接记录快照，而非比较差异
+其它大部分系统以文件变更列表的方式存储信息
+这类系统 将他们保存的信息看作是一组基本文件和每个文件随时间逐步累积的差异
+Git 更像是把数据看作是对小型文件系统的一组快照。 
+每次你提交更新，或在 Git 中保存项目状态时，它主要对当时的全部文件制作一个快照并保存这个快照的索引
+
+3.2.近乎所有操作都是本地执行
+3.3.Git 保证完整性
+3.4.Git 一般只添加数据
+
+3.4.三种状态
+已提交（committed）、已修改（modified）和已暂存（staged）
+
+工作目录、暂存区域以及 Git 仓库
+
+基本的 Git 工作流程如下：
+3.4.1.在工作目录中修改文件。
+3.4.2.暂存文件，将文件的快照放入暂存区域。
+3.4.3.提交更新，找到暂存区域的文件，将快照永久性存储到 Git 仓库目录。
+
+
+
+4.命令
+
+5.安装
+
+
+6.初次运行配置
+git config工具
+
+a. /etc/gitconfig文件
+ 包含系统上每一个用户及他们仓库的通用配置。 如果使用带有 --system 选项的 git config 时，它会从此文件读写配置变量。
+b.~/.gitconifg 或 ~/.config/git/config 文件
+ 只针对当前用户。 可以传递 --global 选项让 Git 读写此文件。
+c. .git/config
+ 当前使用仓库的 Git 目录中的 config 文件,针对该仓库
+
+每一个级别覆盖上一级别的配置，所以 .git/config 的配置变量会覆盖 /etc/gitconfig 中的配置变量。
+
+用户信息
+$git config --global user.name "John Doe"
+$git config --global user.email johndoe@example.com
+
+默认文本编辑器vim
+$git config --global core.editor emacs
+ 如果未配置，Git 会使用操作系统默认的文本编辑器，通常是 Vim,提交注释时用
+
+检查配置信息
+$git config --list
+
+你可能会看到重复的变量名，因为 Git 会从不同的文件中读取同一个配置
+（例如：/etc/gitconfig 与 ~/.gitconfig）。 
+这种情况下，Git 会使用它找到的每一个变量的最后一个配置。
+
+你可以通过输入 git config <key>： 来检查 Git 的某一项配置
+$git config user.name
+
+
+6.获取帮助
+三种方法
+$git help <verb>
+$git <verb> --help
+$man git-<verb>
+
+例如，要想获得 config 命令的手册，执行
+$git help config
+
+
+
+
+二、git基础
+1.获取git 仓库
+1.1在现有目录中初始化仓库
+$git init 
+
+$git add *.java
+$git add LICENSE
+$git commit -m 'initial project...'
+
+1.2克隆现有仓库
+执行 git clone 命令的时候，默认配置下远程 Git 仓库中的每一个文件的每一个版本都将被拉取下来
+$git clone https://github.com/libgit2/libgit2
+自定义本地仓库的名字:
+$git clone https://github.com/libgit2/libgit2 mylibgit
+
+上面的例子使用的是 https:// 协议，
+也可以使用 git:// 协议 或SSH 传输协议，如 user@server:path/to/repo.git 
+
+
+
+2.记录每次更新到仓库
+文件状态 untracked unmodified modified staged 
+2.1检查当前文件状态
+$git status
+
+2.2跟踪新文件
+$git add LICENSE
+$git add src
+
+2.3.状态简览
+$git status -s
+$git status --short
+
+新添加到暂存区中的文件前面有 A 标记
+修改过的文件前面有 M 标记
+删除的有D标记
+新添加的未跟踪文件前面有 ?? 标记
+
+MM:
+出现在右边的 M 表示该文件被修改了但是还没放入暂存区，出现在靠左边的 M 表示该文件被修改了并放入了暂存区
+
+2.4.忽略文件
+文件名：.gitignore
+格式规范
+a)所有空行或者以 ＃ 开头的行都会被 Git 忽略。
+b)可以使用标准的 glob 模式匹配。
+c)匹配模式可以以（/）开头防止递归。
+d)匹配模式可以以（/）结尾指定目录。
+e)要忽略指定模式以外的文件或目录，可以在模式前加上惊叹号（!）取反。
+
+例子:
+{
+#忽略以.a结尾的文件
+*.a
+
+#就算lib.a也是以.a结尾，也不要忽略
+!lib.a
+
+#只忽略当前目录下的TODO文件，而不忽略子目录下的TODO文件
+/TODO
+
+#忽略在build/目录下的所有文件及文件夹
+build/
+
+#忽略doc/目录下的txt文件,但是不忽略doc/xx/目录下的txt文件 
+doc/*.txt
+
+#忽略doc/目录及其子目录下的所有txt文件
+doc/**/*.txt
+}
+
+2.5.查看已暂存和未暂存的修改内容
+$git diff  #只显示尚未暂存的改动
+$git diff --staged 
+$git diff --cached #查看已暂存的将要添加到下次提交里的内容
+ 
+2.6
+提交更新
+$git commit #跳转vim 写注释 ，wq后提交
+$git -v commit #跳转vim 附带diff信息
+$git commit -m "说明注释" #单行注释
+
+2.7跳过使用暂存区域
+$git commit -a -m "跳过暂存"
+把所有已经跟踪过的文件暂存起来一并提交，从而跳过 git add 步骤
+
+2.8移除文件
+git库中已存在xxx文件时
+$rm xxx #会在 “Changes not staged for commit” 部分（也就是 未暂存清单）看到 deleted:    xxx
+$git rm xxx #会在 “Changes to be committed” 部分（也就是 未暂存清单）看到 deleted:    xxx
+
+$git rm --cached xxx  #从暂存区域移除
+$ git rm log/\*.log  #删除 log/ 目录下扩展名为 .log 的所有文件
+$ git rm \*~  #该命令为删除以 ~ 结尾的所有文件。
+
+
+2.9.移动文件
+$git mv file_from file_to
+显示为 renamed:   file_from -> file_to
+
+git mv 就相当于运行了下面三条命令：
+$ mv README.md README
+$ git rm README.md
+$ git add README
+如此分开操作，Git 也会意识到这是一次改名，所以不管何种方式结果都一样
+
+
+
+3.查看提交历史
+3.1.查看命令
+$git log
+默认不用任何参数的话，git log 会按提交时间列出所有的更新，最近的更新排在最上面。
+这个命令会列出每个提交的 SHA-1 校验和、作者的名字和电子邮件地址、提交时间以及提交说明。
+
+$ git log -p -2
+-p，用来显示每次提交的内容差异。 -2 仅显示最近两次提交
+
+$ git log --stat
+--stat选项在每次提交的下面列出所有被修改过的文件、有多少文件被修改了
+以及被修改过的文件的哪些行被移除或是添加了。 在每次提交的最后还有一个总结
+
+$ git log --pretty=oneline
+--pretty这个选项可以指定使用不同于默认格式的方式展示提交历史
+用 oneline 将每个提交放在一行显示
+
+$ git log --pretty=format:"%h - %an, %ar : %s"
+定制要显示的记录格式
+
+选项	说明
+%H	提交对象（commit）的完整哈希字串
+%h	提交对象的简短哈希字串
+%T	树对象（tree）的完整哈希字串
+%t	树对象的简短哈希字串
+%P	父对象（parent）的完整哈希字串
+%p	父对象的简短哈希字串
+%an	作者（author）的名字
+%ae	作者的电子邮件地址
+%ad	作者修订日期（可以用 --date= 选项定制格式）
+%ar	作者修订日期，按多久以前的方式显示
+%cn	提交者（committer）的名字
+%ce	提交者的电子邮件地址
+%cd	提交日期
+%cr	提交日期，按多久以前的方式显示
+%s	提交说明
+
+$ git log --pretty=format:"%h %s" --graph
+
+3.2限制输出长度
+ -<n> 选项
+$git log -3
+
+还有按照时间作限制的选项，比如 --since 和 --until
+$ git log --since=2.weeks
+$ git log --since= "2008-01-15"
+$ git log --since="2 years 1 day 3 minutes ago"
+
+$ git log -Sfunction_name
+列出那些添加或移除了某些字符串的提交
+
+选项	说明
+-(n)	仅显示最近的 n 条提交
+--since, --after	仅显示指定时间之后的提交。
+--until, --before	仅显示指定时间之前的提交。
+--author	仅显示指定作者相关的提交。
+--committer	仅显示指定提交者相关的提交。
+--grep	仅显示含指定关键字的提交
+-S	仅显示添加或移除了某个关键字的提交
+
+
+$git log --pretty=format:"%cd %h %s" --date=iso --author liuzhaoxu
+日期iso8601格式
+$git log --pretty=format:"%cd %h %s" --date=short --author liuzhaoxu
+日期iso短格式
+
+git log --pretty="%h - %s" --author=gitster --since="2008-10-01" --before="2008-11-01" --no-merges -- t/
+按格式搜索t/路径下author=gitster的2008年10月期间 提交的但未合并的文件
+
+
+
+4.撤消操作
+4.1重新提交:
+$ git commit -m 'initial commit'
+$ git add forgotten_file
+$ git commit --amend
+
+将暂存区中的文件提交
+如果自上次提交以来你还未做任何修改（例如，在上次提交后马上执行了此命令），那么快照会保持不变，而你所修改的只是提交信息
+最终你只会有一个提交 - 第二次提交将代替第一次提交的结果。
+
+
+4.2取消暂存的文件
+git reset HEAD <file>...
+
+4.3撤消对文件的修改
+git checkout -- CONTRIBUTING.md
+
+
+
+5.查看远程仓库
+5.1.查看命令
+$git remote
+
+$git remote -v 
+选项 -v，会显示需要读写远程仓库使用的 Git 保存的简写与其对应的 URL
+
+5.2添加远程仓库
+git remote add mt https://github.com/liuzhaoxu/mytest
+添加时不会有问题，但是，推拉时如果没这个库，会报错
+
+5.3.从远程仓库中抓取与拉取
+$ git fetch [remote-name]
+$ git pull [remote-name]
+
+用 clone 命令克隆一个仓库，命令会自动将其添加为远程仓库并默认以origin为简写
+git fetch origin 会抓取克隆（或上一次抓取）后新推送的所有工作
+注意 git fetch 命令会将数据拉取到你的本地仓库 - 并不会自动合并或修改你当前的工作
+如果你有一个分支设置为跟踪一个远程分支，可以使用 git pull 命令来自动的抓取然后合并远程分支到当前分支。
+默认情况下，git clone 命令会自动设置本地 master 分支跟踪克隆的远程仓库的 master 分支（或不管是什么名字的默认分支）
+运行 git pull 通常会从最初克隆的服务器上抓取数据并自动尝试合并到当前所在的分支。
+
+5.4.推送到远程仓库
+git push [remote-name] [branch-name]
+
+$ git push origin master
+只有当你有所克隆服务器的写入权限，并且之前没有人推送过时，这条命令才能生效。 
+当你和其他人在同一时间克隆，他们先推送到上游然后你再推送到上游，你的推送就会毫无疑问地被拒绝。 
+你必须先将他们的工作拉取下来并将其合并进你的工作后才能推送
+
+
+5.5.查看远程仓库更多信息
+$git remote show origin
+列出了当你在特定的分支上执行 git push 会自动地推送到哪一个远程分支。
+它也同样地列出了哪些远程分支不在你的本地，哪些远程分支已经从服务器上移除了，
+还有当你执行 git pull 时哪些分支会自动合并。
+
+5.6.远程仓库的移除与重命名
+$ git remote rename mt mt2
+$ git remote rm mt2
+
+
+6.打标签
+给历史中的某一个提交打上标签
+6.1.列出标签
+$ git tag
+$ git tag -l 'v1.8.5*'
+
+6.2.创建标签
+两种主要类型的标签：轻量标签（lightweight）与附注标签（annotated）
+一个轻量标签很像一个不会改变的分支 - 它只是一个特定提交的引用。
+附注标签是存储在 Git 数据库中的一个完整对象。 它们是可以被校验的；其中包含打标签者的名字、电子邮件地址、日期时间；还有一个标签信息；
+
+
+6.3.附注标签
+$git tag -a v1.4 -m 'my version 1.4'
+
+6.4.轻量标签
+$git tag v1.4 
+ 轻量标签本质上是将提交校验和存储到一个文件中 - 没有保存任何其他信息。 
+你不会看到额外的标签信息。 命令只会显示出提交信息
+
+6.5.后期打标签
+可以对过去的提交打标签
+
+6.6共享标签
+默认情况下，git push 命令并不会传送标签到远程仓库服务器上。 
+在创建完标签后你必须显式地推送标签到共享服务器上。
+这个过程就像共享远程分支一样 
+可以运行 git push origin [tagname]。
+$ git push origin v1.5
+
+$ git push origin --tags
+如果想要一次性推送很多标签，也可以使用带有 --tags 选项的 git push 命令。 
+这将会把所有不在远程仓库服务器上的标签全部传送到那里
+
+
+6.7.检出标签
+并不能真的检出一个标签，因为它们并不能像分支一样来回移动
+如果你想要工作目录与仓库中特定的标签版本完全一样，
+可以使用 git checkout -b [branchname] [tagname] 在特定的标签上创建一个新分支
+$ git checkout -b version2 v2.0.0
+
+
+
+7.Git别名
+$ git config --global alias.co checkout
+$ git config --global alias.br branch
+$ git config --global alias.ci commit
+$ git config --global alias.st status
+当要输入 git commit 时，只需要输入 git ci
+
+$ git config --global alias.unstage 'reset HEAD --'
+$ git config --global alias.last 'log -1 HEAD'
+
+
+想要执行外部命令，而不是一个 Git 子命令。 如果是那样的话，可以在命令前面加入 ! 符号
+$ git config --global alias.visual '!gitk'
+
+
+
+三、Git分支
+在很多版本控制系统中，这是一个略微低效的过程——常常需要完全创建一个源代码目录的副本。
+必杀技特性(难以置信的轻量)
+创建新分支这一操作几乎能在瞬间完成，并且在不同分支之间的切换操作也是一样便捷
+Git 鼓励在工作流程中频繁地使用分支与合并，哪怕一天之内进行许多次
+
+1.分支简介
+a)暂存操作会为每一个文件计算校验和（SHA-1算法），
+然后会把当前版本的文件快照保存到 Git 仓库中（Git 使用 blob 对象来保存它们），
+最终将校验和加入到暂存区域等待提交
+b)当使用 git commit 进行提交操作时，Git 会先计算每一个子目录（本例中只有项目根目录）的校验和，
+然后在 Git 仓库中这些校验和保存为树对象。 
+随后Git创建一个提交对象，除了包含上面提到的那些信息外，还包含指向这个树对象（项目根目录）的指针
+c)做些修改后再次提交，那么这次产生的提交对象会包含一个指向上次提交对象（父对象）的指针
+
+Git的分支，其实本质上仅仅是指向提交对象的可变指针。
+
+1.1创建分支
+$git branch testing
+这会在当前所在的提交对象上创建一个指针
+提交对象上可以有多个指向的指针
+有一个名为 HEAD 的特殊指针,指向当前所在的本地分支
+
+你可以简单地使用 git log 命令查看各个分支当前所指的对象。 提供这一功能的参数是 --decorate。
+$ git log --oneline --decorate
+
+1.2切换分支
+git checkout testing
+
+$ git log --oneline --decorate --graph --all
+查看分支走向
+
+
+2.分支的新建与合并
+
+
+
+
+
+
