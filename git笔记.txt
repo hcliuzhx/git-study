@@ -622,6 +622,84 @@ $ git push origin --delete serverfix
 
 
 三.6.变基
+ Git 中整合来自不同分支的修改主要有两种方法：merge 以及 rebase
+
+6.1.变基的基本操作
+$ git checkout experiment
+$ git rebase master
+
+C1 <-- C2 <-- C3(master)
+       C2 <-- C4(experiment)
+它的原理是首先找到这两个分支（即当前分支 experiment、变基操作的目标基底分支 master）的最近共同祖先 C2，
+然后对比当前分支相对于该祖先的历次提交，提取相应的修改并存为临时文件，
+然后将当前分支指向目标基底 C3, 最后以此将之前另存为临时文件的修改依序应用。
+
+$ git checkout master
+$ git merge experiment
+
+与merge方法的最终结果没有任何区别，但是变基使得提交历史更加整洁
+
+一般我们这样做的目的是为了确保在向远程分支推送时能保持提交历史的整洁
+
+请注意，无论是通过变基，还是通过三方合并，整合的最终结果所指向的快照始终是一样的，只不过提交历史不同罢了。 
+变基是将一系列提交按照原有次序依次应用到另一分支上，而合并是把最终结果合在一起。
+
+
+6.2.有趣的变基例子
+git rebase --onto master server client
+取出 client 分支，找出处于 client 分支和 server 分支的共同祖先之后的修改，
+然后把它们在 master 分支上重放一遍
+
+使用 git rebase [basebranch] [topicbranch] 命令可以直接将特性分支（即本例中的 server）
+变基到目标分支（即 master）上。这样做能省去你先切换到 server 分支，再对其执行变基命令的多个步骤。
+$ git rebase master server
+
+$ git checkout master
+$ git merge server
+
+$ git branch -d client
+$ git branch -d server
+
+
+6.3.变基的风险
+https://git-scm.com/book/zh/v2/Git-%E5%88%86%E6%94%AF-%E5%8F%98%E5%9F%BA
+不要对在你的仓库外有副本的分支执行变基。
+
+变基操作的实质是丢弃一些现有的提交，然后相应地新建一些内容一样但实际上不同的提交。
+
+6.4.用变基解决变基
+
+如果遇到前面提到的 有人推送了经过变基的提交，并丢弃了你的本地开发所基于的一些提交 那种情境，
+如果我们不是执行合并，而是执行 git rebase teamone/master, Git 将会：
+
+a)检查哪些提交是我们的分支上独有的
+b)检查其中哪些提交不是合并操作的结果
+c)检查哪些提交在对方覆盖更新时并没有被纳入目标分支
+d)把查到的这些提交应用在 teamone/master 上面
+
+git pull --rebase
+等于：先 git fetch，再 git rebase teamone/master
+
+如果你习惯使用 git pull ，同时又希望默认使用选项 --rebase，
+你可以执行这条语句 git config --global pull.rebase true 来更改 pull.rebase 的默认配置。
+
+6.5.变基 vs. 合并
+
+有一种观点认为，仓库的提交历史即是 记录实际发生过什么。
+ 它是针对历史的文档，本身就有价值，不能乱改。 
+ 从这个角度看来，改变提交历史是一种亵渎，你使用_谎言_掩盖了实际发生过的事情。 
+ 如果由合并产生的提交历史是一团糟怎么办？ 
+ 既然事实就是如此，那么这些痕迹就应该被保留下来，让后人能够查阅。
+
+另一种观点则正好相反，他们认为提交历史是 项目过程中发生的事。
+ 没人会出版一本书的第一版草稿，软件维护手册也是需要反复修订才能方便使用。
+ 持这一观点的人会使用 rebase 及 filter-branch 等工具来编写故事，怎么方便后来的读者就怎么写。
+
+总的原则是，只对尚未推送或分享给别人的本地修改执行变基操作清理历史，
+从不对已推送至别处的提交执行变基操作，这样，你才能享受到两种方式带来的便利。
+
+
+
 
 
 
