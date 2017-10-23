@@ -144,6 +144,12 @@ $git status --short
 MM:
 出现在右边的 M 表示该文件被修改了但是还没放入暂存区，出现在靠左边的 M 表示该文件被修改了并放入了暂存区
 
+m modified
+a added
+d deleted
+? untracked new file
+
+
 2.4.忽略文件
 文件名：.gitignore
 格式规范
@@ -436,8 +442,26 @@ $ git log --oneline --decorate --graph --all
 
 
 2.分支的新建与合并
+2.1新建分支
+$ git checkout -b iss53
+相当于下面两句：
+新建一个分支并同时切换到那个分支上
+git branch iss53
+git checkout iss53
 
+$ git checkout master #先切到master
+$ git merge hotfix #把hotfix合并到master
+"快进（fast-forward）"。 
+当前 master 分支所指向的提交是你当前提交（有关 hotfix 的提交）的直接上游，
+所以 Git 只是简单的将指针向前移动。 
+当你试图合并两个分支时，如果顺着一个分支走下去能够到达另一个分支，
+那么 Git 在合并两者的时候，只会简单的将指针向前推进（指针右移），
+因为这种情况下的合并操作没有需要解决的分歧——这就叫做 “快进（fast-forward）”
 
+$ git branch -d hotfix
+-d删除分支
+
+2.2分支的合并
 
 
 
