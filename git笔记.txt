@@ -277,6 +277,7 @@ $ git log -Sfunction_name
 --grep	仅显示含指定关键字的提交
 -S	仅显示添加或移除了某个关键字的提交
 
+git log --pretty=format:"%cd %h %s %an"
 
 $git log --pretty=format:"%cd %h %s" --date=iso --author liuzhaoxu
 日期iso8601格式
@@ -433,6 +434,8 @@ $git branch testing
 
 你可以简单地使用 git log 命令查看各个分支当前所指的对象。 提供这一功能的参数是 --decorate。
 $ git log --oneline --decorate
+git log --pretty=format:"%cd %h %an %d" --date=short --decorate --all -20
+
 
 1.2切换分支
 git checkout testing
@@ -700,6 +703,8 @@ git pull --rebase
 
 
 
-
-
+另外：
+暂时将未提交的变化移除，稍后再移入
+$ git stash
+$ git stash pop
 
